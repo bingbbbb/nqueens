@@ -6,6 +6,7 @@ using namespace nqueens;
 using std::string;
 int main()
 {
-    otherPcLoop otherPcLoop_;
-    otherPcLoop_.connectMainPc();
+    otherPcLoop loop;
+    loop.connectMainPc();
+    loop.loop();
 }

@@ -3,9 +3,15 @@
 
 #include <vector>
 #include <stdint.h>             /* Definition of uint64_t */
+#include "Buffer.h"
 
 namespace nqueens
 {
+union longCharArr
+{
+    uint64_t long_;
+    char charArr[8];
+};
 class Nqueens
 {
 public:
@@ -18,19 +24,31 @@ public:
     bool isEmpty() {return tasks_.empty();}
     void clear();
     void addSum(uint64_t sum) { sum_ += sum;}
-    
+    //MainPcLoop用到的函数
+    uint64_t readSumFromFd(int fd);
+    void taskTowrBuf();
+    void writeTaskToFd(int fd);
+    bool needWr();
+    //otherPcLoop用到的函数
+    int readTaskBufFromFd(int fd);
+    void rdBufToTask();
+    void writeSumToFd(int fd);
+
+
     Nqueens(const Nqueens &) = delete;
     const Nqueens &operator=(const Nqueens &) = delete;
     
 private:
-    void genTasksSub(long row, long ld, long rd, int i);
-    void calSum(long row, long ld, long rd);
+    void genTasksSub(uint64_t row, uint64_t ld, uint64_t rd, int i);
+    void calSum(uint64_t row, uint64_t ld, uint64_t rd);
     int taskLevel_;
     uint64_t sum_;
     int queenNum_;
-    long upperlim_;
-    std::vector<std::vector<long>> tasks_; 
-
+    uint64_t upperlim_;
+    std::vector<std::vector<uint64_t>> tasks_; 
+    Buffer<char> wrBuf_;
+    Buffer<char> rdBuf_;
+    longCharArr longCharArr_;
 };
 }
 #endif

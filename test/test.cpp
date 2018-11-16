@@ -30,4 +30,7 @@ int main()
         cout << *a << endl;
     else
         cout << "not found" << endl;
+    longCharArr longCharArr_;
+    longCharArr_.long_ = 0x353641424448494D;
+    cout << longCharArr_.charArr << endl;
 }

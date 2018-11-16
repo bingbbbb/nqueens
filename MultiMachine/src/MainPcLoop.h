@@ -5,7 +5,6 @@
 #include <sys/types.h>          //pid_t
 #include <unistd.h>             //syscall()
 #include <sys/syscall.h>        //SYS_gettid
-#include <boost/function.hpp>   //boost::function
 #include <sys/eventfd.h>        //eventfd()
 #include <sys/epoll.h>          //epoll_create()
 #include <map>
@@ -20,7 +19,7 @@ class MainPcLoop
 {
 public:
     //typedef boost::function<void()> EventCallback;
-    MainPcLoop(int n, int threadNum);
+    MainPcLoop();
     ~MainPcLoop();
     void waitforConnect();
     void loop();
@@ -56,8 +55,9 @@ private:
     struct epoll_event event_;
     Nqueens nqueens_;
     std::vector<std::shared_ptr<CalThread>> calThreadPool_;
-    std::map<int, std::shared_ptr<CalThread>> fd2Thread_;
-    std::vector<int> otherPcFd_;
+    std::map<int, std::shared_ptr<CalThread>> fd2Thread_;   //其他线程的fd
+    //std::vector<int> otherPcFd_;
+    std::map<int, std::shared_ptr<Nqueens>> fd2nqueens_;    //其他机器的fd
     size_t livedThreadNum_;
 };
 }
