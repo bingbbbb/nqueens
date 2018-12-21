@@ -2,6 +2,8 @@
 #include <assert.h>             //assert()
 #include <unistd.h>             //write()
 #include <sys/epoll.h>          //epoll_ctl() epoll_event
+#include <cstdio>               
+#include <ctime>
 
 #include "CalThread.h"
 using namespace nqueens;
@@ -57,7 +59,14 @@ void CalThread::CalLoop()
                 throw std::runtime_error("write error in CalLoop()");
         }
     }
-    printf("quit CalThread %d \n", threadId_);
+    printf("CalThread %d quit at ", threadId_);
+    time_t rawtime;
+    struct tm *ptminfo;
+    time(&rawtime);
+    ptminfo = localtime(&rawtime);
+    printf(": %02d:%02d:%02d \n",
+            ptminfo->tm_hour, ptminfo->tm_min, ptminfo->tm_sec); 
+            
     looping_ = false;
 }
 

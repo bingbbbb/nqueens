@@ -17,7 +17,6 @@ int main()
     {
         NqEventLoop loop(17, 6);
         //有时候会死循环
-        typedef boost::function<void()> EventCallback;
         time_t tm;
         tm = time(0);
         //Nqueens* nqueens = loop.getNqueens();
