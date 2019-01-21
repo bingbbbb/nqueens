@@ -54,7 +54,7 @@ void test(long row, long ld, long rd)
 int main(int argc, char *argv[])  
 {  
     time_t tm;  
-    int n = 16;  
+    int n = 5;  
   
     if (argc != 1)  
         n = atoi(argv[1]);  
