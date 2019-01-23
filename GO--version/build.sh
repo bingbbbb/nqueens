@@ -10,4 +10,5 @@ fi
 
 export GOPATH=`pwd`
 go install -gcflags "-m" main
-./bin/main
+go install -gcflags "-m" otherPc
+#./bin/otherPc

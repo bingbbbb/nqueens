@@ -44,6 +44,13 @@ func Gen_tasks(row int32, ld int32, rd int32, task_level int32) {
 	}
 }
 
+func Min(x, y int) int {
+    if x < y {
+        return x
+    }
+    return y
+}
+
 /**
 Cal_task()
 16		//8s
