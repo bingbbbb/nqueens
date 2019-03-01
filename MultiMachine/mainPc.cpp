@@ -9,7 +9,7 @@ using std::string;
 
 int main()
 {
-
+    _LOG(Level::INFO, {WHERE, "Task start"});
     {
         MainPcLoop loop;
         loop.genTasks(std::stoi(ConfigLoad::getIns()->getValue("taskLevel")));
@@ -23,6 +23,7 @@ int main()
         uint64_t sum = loop.getSum();
         printf("共有%ld种排列, 计算时间%d秒 \n", sum, (int) (time(0) - tm));
     }
+    _LOG(Level::INFO, {WHERE, "Task finish"});
     STOP_LOG();
     return 0;
 }

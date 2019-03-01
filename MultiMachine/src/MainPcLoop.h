@@ -55,9 +55,9 @@ private:
     struct epoll_event event_;
     Nqueens nqueens_;
     std::vector<std::shared_ptr<CalThread>> calThreadPool_;
-    std::map<int, std::shared_ptr<CalThread>> fd2Thread_;   //其他线程的fd
+    std::unordered_map<int, std::shared_ptr<CalThread>> fd2Thread_;   //其他线程的fd
     //std::vector<int> otherPcFd_;
-    std::map<int, std::shared_ptr<Nqueens>> fd2nqueens_;    //其他机器的fd
+    std::unordered_map<int, std::shared_ptr<Nqueens>> fd2nqueens_;    //其他机器的fd
     size_t livedThreadNum_;
 };
 }

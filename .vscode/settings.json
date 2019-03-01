@@ -51,6 +51,7 @@
         "mutex": "cpp",
         "*.ipp": "cpp",
         "string": "cpp",
-        "condition_variable": "cpp"
+        "condition_variable": "cpp",
+        "future": "cpp"
     }
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sys/socket.h>     //recv()
 #include <unistd.h>         //write()
+#include<algorithm>         //min()
 #include "Nqueens.h"
 #include "MLog.h"
 
@@ -136,13 +137,13 @@ void Nqueens::writeTaskToFd(int fd)
 {
     int ret = 0;
     //size_t oriSize = m_wrBuf.size();
-    ret = ::write(fd, wrBuf_.GetPtr(), wrBuf_.size());
+    ret = ::write(fd, wrBuf_.GetPtr(), std::min(wrBuf_.size(), wrBuf_.sizeEnd()));
     while (ret > 0)
     {
         wrBuf_.discard(ret); //已写入ret字节，可以去掉
         if (!wrBuf_.size())  //若已经写完，终止循环
             break;
-        ret = ::write(fd, wrBuf_.GetPtr(), wrBuf_.size());
+        ret = ::write(fd, wrBuf_.GetPtr(), std::min(wrBuf_.size(), wrBuf_.sizeEnd()));
     }
     if (ret < 0 && errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR)
         RUNTIME_ERROR();
@@ -176,7 +177,7 @@ int Nqueens::readTaskBufFromFd(int fd)
             size_t bufSize = rdBuf_.size();
             for(int i=0;i<7;i++)
             {
-                if (pBuf[bufSize-7+i]!=endChar[i])
+                if (pBuf[(bufSize-7+i) % rdBuf_.capacity()]!=endChar[i])
                     return -1;
             }
             return 1;
@@ -196,17 +197,17 @@ void Nqueens::rdBufToTask()
         uint64_t row, ld, rd;
         for(int j=0;j<8;j++)
         {
-            longCharArr_.charArr[j] = pBuf[j];
+            longCharArr_.charArr[j] = pBuf[j % rdBuf_.capacity()];
         }
         row = longCharArr_.long_;
         for(int j=0;j<8;j++)
         {
-            longCharArr_.charArr[j] = pBuf[j+8];
+            longCharArr_.charArr[j] = pBuf[(j+8) % rdBuf_.capacity()];
         }
         ld = longCharArr_.long_;
         for(int j=0;j<8;j++)
         {
-            longCharArr_.charArr[j] = pBuf[j+16];
+            longCharArr_.charArr[j] = pBuf[(j+16) % rdBuf_.capacity()];
         }
         rd = longCharArr_.long_;
         tasks_.push_back({row, ld, rd});

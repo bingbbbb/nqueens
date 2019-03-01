@@ -95,6 +95,7 @@ void MLog::init()
  */
 void MLog::append(Level level, std::initializer_list<std::string> logline)
 {
+    /*
     auto tpNow = system_clock::now();         //time_point
     auto tt = system_clock::to_time_t(tpNow); //time_t,1970/1/1至今的UTC秒数
     struct tm tmBuf;
@@ -102,6 +103,8 @@ void MLog::append(Level level, std::initializer_list<std::string> logline)
     char formatTime[32];
     strftime(formatTime, sizeof(formatTime), "%Y/%m/%d %X", &tmBuf);
     std::string msg(formatTime);
+    */
+    std::string msg(m_time.get_curr_time());
     switch (level)
     {
     case Level::INFO:

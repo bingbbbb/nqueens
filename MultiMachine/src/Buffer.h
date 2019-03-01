@@ -1,3 +1,102 @@
+/**
+ * Buffer类，作用是在non-blocking网络通信中，避免程序阻塞在read()或write()
+ * 函数中，应尽快返回控制权。IO线程只能阻塞在IO multiplexing函数上，如epoll_wait
+ * 
+ * 使用circular Buffer结构，减少数据拷贝
+ * 用malloc代替new，减少不必要的init操作
+ * readerIndex_使用下标而非指针，避免了内存重新分配指针失效的问题
+ */
+
+#ifndef BUFFER_H
+#define BUFFER_H
+#include <string>           //std::string
+#include <stdlib.h>         //malloc(),free()
+#include <assert.h>         //assert()
+
+namespace nqueens
+{
+class Buffer
+{
+public:
+    explicit Buffer (size_t initCap = 0)
+        : readerIndex_(0), writerIndex_(0), size_(0), capacity_(initCap ? initCap : SPARE_CAPACITY_)
+    {
+        pObjs_ = static_cast<char*>(malloc(capacity_ * sizeof(char)));
+        assert(pObjs_ != nullptr);
+    }
+    Buffer(const Buffer &) = delete;
+    const Buffer &operator=(const Buffer &) = delete;
+    ~Buffer()
+    {
+        free(pObjs_);
+    }
+    size_t size() const { return size_; }
+    size_t capacity() const { return capacity_; }
+    void reserve(size_t newCap) //重新分配数组容量
+    {
+        if (newCap <= size_)
+            return;
+        char* pOld = pObjs_;
+        pObjs_ = static_cast<char*>(malloc(newCap * sizeof(char)));
+        assert(pObjs_ != nullptr);
+        for (size_t i = 0;i < size_;++i)    //拷贝数据,从下标0开始填充
+        {
+            pObjs_[i] = pOld[(readerIndex_ + i) % capacity_];
+        }
+        readerIndex_ = 0;                   //新的下标及容量
+        writerIndex_ = size_;
+        capacity_ = newCap;
+    }
+    void append(const char* pData, size_t len)  //将pData数组追加到writeable区间
+    {
+        if (size_ + len > capacity_)            //空间不够扩容
+            reserve((size_ + len) * 2);
+        for (size_t i = 0;i < len;++i)
+        {
+            pObjs_[writerIndex_] = pData[i];
+            writerIndex_ = (++writerIndex_) % capacity_;    //更新writerIndex_
+        }
+        size_ += len;
+    }
+    void append(const std::string &data)        //将string中的字符追加到writeable区间
+    {
+        if (size_ + data.size() > capacity_)            //空间不够扩容
+            reserve((size_ + data.size()) * 2);
+        for (size_t i = 0;i < data.size();++i)
+        {
+            pObjs_[writerIndex_] = data[i];
+            writerIndex_ = (++writerIndex_) % capacity_;    //更新writerIndex_
+        }
+        size_ += data.size();
+    }
+    void discard(size_t len)                                //已经读完len个字节，移动读下标
+    {
+        if (len == 0)
+            return;
+        assert(size_ >= len);
+        readerIndex_ = (readerIndex_ + len) % capacity_;
+        size_ -= len;
+    }
+    const char * GetPtr() const { return pObjs_ + readerIndex_; }
+    size_t sizeEnd() { return capacity_ - readerIndex_; }
+
+
+
+private:
+    const static size_t SPARE_CAPACITY_ = 32;//默认初始化大小
+    char*   pObjs_;                         //申请到的空间
+    size_t  readerIndex_;                   //读下标
+    size_t  writerIndex_;                   //写下标
+    size_t  size_;                          //大小
+    size_t  capacity_;                      //容量
+
+
+};
+}
+#endif
+
+
+/**
 #ifndef BUFFER_H
 #define BUFFER_H
 #include <string>
@@ -9,7 +108,7 @@ namespace nqueens
  * 封装Buffer类似于封装Vector，接口差不多
  * 待改进：（1）用alloctor而不是new
  *        （2）用nHead和nTail将Buffer以环形数组实现，这样可以避免discard操作
- */
+ *
 template <typename Object>
 class Buffer
 {
@@ -83,5 +182,5 @@ class Buffer
     Object *m_pObjs;   //数组
 };
 }
-
 #endif //BUFFER_H
+*/

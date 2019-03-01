@@ -46,8 +46,8 @@ private:
     int queenNum_;
     uint64_t upperlim_;
     std::vector<std::vector<uint64_t>> tasks_; 
-    Buffer<char> wrBuf_;
-    Buffer<char> rdBuf_;
+    Buffer wrBuf_;
+    Buffer rdBuf_;
     longCharArr longCharArr_;
 };
 }
