@@ -12,6 +12,11 @@ union longCharArr
     uint64_t long_;
     char charArr[8];
 };
+union intCharArr
+{
+    uint32_t int_;
+    char charArr[4];
+};
 class Nqueens
 {
 public:
@@ -39,16 +44,19 @@ public:
     const Nqueens &operator=(const Nqueens &) = delete;
     
 private:
-    void genTasksSub(uint64_t row, uint64_t ld, uint64_t rd, int i);
-    void calSum(uint64_t row, uint64_t ld, uint64_t rd);
+    void genTasksSub(uint32_t row, uint32_t ld, uint32_t rd, int i);
+    void calSum(uint32_t row, uint32_t ld, uint32_t rd);
     int taskLevel_;
     uint64_t sum_;
     int queenNum_;
-    uint64_t upperlim_;
-    std::vector<std::vector<uint64_t>> tasks_; 
+    uint32_t upperlim_;
+    std::vector<std::vector<uint32_t>> tasks_; 
     Buffer wrBuf_;
     Buffer rdBuf_;
     longCharArr longCharArr_;
+    intCharArr intCharArr_;
+    char endC_;
+    char endChar_[12];
 };
 }
 #endif

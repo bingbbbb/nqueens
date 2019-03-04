@@ -20,17 +20,19 @@ void testLongCharArr()
     cout << longCharArr_.long_ << endl;
 }
 
-
+void testchar()
+{
+    char a = static_cast<char>(0xFF);
+    int temp;
+    for (int i=0;i<8;i++)
+    {
+        temp = (a >> i) & 1;
+        cout << temp;
+    }
+    cout<<endl;
+}
 
 int main()
 {
-    std::vector<int> vec{1, 2, 3};
-    auto a = std::find(vec.begin(), vec.end(), 4);
-    if(a != vec.end())
-        cout << *a << endl;
-    else
-        cout << "not found" << endl;
-    longCharArr longCharArr_;
-    longCharArr_.long_ = 0x353641424448494D;
-    cout << longCharArr_.charArr << endl;
+    testchar();
 }

@@ -34,7 +34,7 @@ public:
     size_t capacity() const { return capacity_; }
     void reserve(size_t newCap) //重新分配数组容量
     {
-        if (newCap <= size_)
+        if (newCap <= capacity_)
             return;
         char* pOld = pObjs_;
         pObjs_ = static_cast<char*>(malloc(newCap * sizeof(char)));
@@ -79,6 +79,9 @@ public:
     }
     const char * GetPtr() const { return pObjs_ + readerIndex_; }
     size_t sizeEnd() { return capacity_ - readerIndex_; }
+    const char * GetStartPtr() const { return pObjs_; }
+    size_t readerIndex() { return readerIndex_; }
+    size_t writerIndex() { return writerIndex_; }
 
 
 

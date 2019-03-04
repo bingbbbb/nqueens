@@ -13,9 +13,12 @@ Nqueens::Nqueens(int n):
         upperlim_(1),
         tasks_({{0, 0, 0}}),
         wrBuf_(50),
-        rdBuf_(50)
+        rdBuf_(50),
+        endC_(static_cast<char>(0xFF))
 {
     upperlim_ = (upperlim_ << n) - 1;
+    for (int i = 0;i < 12;++i)
+        endChar_[i] = endC_;
 };
 
 Nqueens::~Nqueens()
@@ -23,14 +26,14 @@ Nqueens::~Nqueens()
     
 }
 
-void Nqueens::genTasksSub(uint64_t row, uint64_t ld, uint64_t rd, int i)  
+void Nqueens::genTasksSub(uint32_t row, uint32_t ld, uint32_t rd, int i)  
 {  
     if (i < taskLevel_)  
     {
-        uint64_t pos = upperlim_ & ~(row | ld | rd);   
+        uint32_t pos = upperlim_ & ~(row | ld | rd);   
         while (pos)    
         {
-            uint64_t p = pos & -pos;                                                
+            uint32_t p = pos & -pos;                                                
             pos -= p;                             
             genTasksSub(row + p, (ld + p) << 1, (rd + p) >> 1, i + 1);                                
         }  
@@ -51,21 +54,21 @@ void Nqueens::genTasks(int taskLevel)
 
 void Nqueens::calSumOfTasks()
 {
-    for(std::vector<uint64_t> task : tasks_)
+    for(std::vector<uint32_t> task : tasks_)
     {
         calSum(task[0], task[1], task[2]);
         //printf("row:%ld  ld:%ld  rd:%ld sum:%ld \n", task[0], task[1], task[2], sum_); 
     }
 }
 
-void Nqueens::calSum(uint64_t row, uint64_t ld, uint64_t rd)
+void Nqueens::calSum(uint32_t row, uint32_t ld, uint32_t rd)
 {
     if (row != upperlim_)  
     {
-        uint64_t pos = upperlim_ & ~(row | ld | rd);   
+        uint32_t pos = upperlim_ & ~(row | ld | rd);   
         while (pos)
         { 
-            uint64_t p = pos & -pos;
+            uint32_t p = pos & -pos;
             pos -= p;                             
             calSum(row + p, (ld + p) << 1, (rd + p) >> 1);                                
         }  
@@ -124,12 +127,11 @@ void Nqueens::taskTowrBuf()
     {
         for(auto foreach_2 : foreach_1)
         {
-            longCharArr_.long_ = foreach_2;
-            wrBuf_.append(longCharArr_.charArr, 8);
+            intCharArr_.int_ = foreach_2;
+            wrBuf_.append(intCharArr_.charArr, 4);
         }
     }
-    char endChar[8] = {'\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r'};//结束符
-    wrBuf_.append(endChar, 8);
+    wrBuf_.append(endChar_, 12);
     //printf("wrBuf_.size(): %d \n", wrBuf_.size());
 }
 
@@ -172,12 +174,12 @@ int Nqueens::readTaskBufFromFd(int fd)
         return 0;
     else if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
         {
-            char endChar[8] = {'\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r'};//结束符
-            const char *pBuf = rdBuf_.GetPtr();
+            //结束符
+            const char *pBuf = rdBuf_.GetStartPtr();
             size_t bufSize = rdBuf_.size();
-            for(int i=0;i<7;i++)
+            for(int i=0;i<12;i++)
             {
-                if (pBuf[(bufSize-7+i) % rdBuf_.capacity()]!=endChar[i])
+                if (pBuf[(rdBuf_.writerIndex()+rdBuf_.capacity()-12+i) % rdBuf_.capacity()]!=endChar_[i])
                     return -1;
             }
             return 1;
@@ -188,32 +190,32 @@ int Nqueens::readTaskBufFromFd(int fd)
 void Nqueens::rdBufToTask()
 {
     //clear();
-    const char *pBuf = rdBuf_.GetPtr();
+    const char *pBuf = rdBuf_.GetStartPtr();
     size_t bufSize = rdBuf_.size();
     //printf("rdBuf_.size(): %ld \n", bufSize);
-    int taskNum = (bufSize - 8) / 24;//应该是刚好整除的
+    int taskNum = (bufSize - 12) / 12;//应该是刚好整除的
     for(int i=0;i<taskNum;i++)
     {
-        uint64_t row, ld, rd;
-        for(int j=0;j<8;j++)
+        uint32_t row, ld, rd;
+        for(int j=0;j<4;j++)
         {
-            longCharArr_.charArr[j] = pBuf[j % rdBuf_.capacity()];
+            intCharArr_.charArr[j] = pBuf[(rdBuf_.readerIndex()+j) % rdBuf_.capacity()];
         }
-        row = longCharArr_.long_;
-        for(int j=0;j<8;j++)
+        row = intCharArr_.int_;
+        for(int j=0;j<4;j++)
         {
-            longCharArr_.charArr[j] = pBuf[(j+8) % rdBuf_.capacity()];
+            intCharArr_.charArr[j] = pBuf[(rdBuf_.readerIndex()+j+4) % rdBuf_.capacity()];
         }
-        ld = longCharArr_.long_;
-        for(int j=0;j<8;j++)
+        ld = intCharArr_.int_;
+        for(int j=0;j<4;j++)
         {
-            longCharArr_.charArr[j] = pBuf[(j+16) % rdBuf_.capacity()];
+            intCharArr_.charArr[j] = pBuf[(rdBuf_.readerIndex()+j+8) % rdBuf_.capacity()];
         }
-        rd = longCharArr_.long_;
+        rd = intCharArr_.int_;
         tasks_.push_back({row, ld, rd});
-        rdBuf_.discard(24);
+        rdBuf_.discard(12);
     }
-    rdBuf_.discard(8);
+    rdBuf_.discard(12);
     printf("get %zu tasks from mainPc\n", tasks_.size());
 }
 
